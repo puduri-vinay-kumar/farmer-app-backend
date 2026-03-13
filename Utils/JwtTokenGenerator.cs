@@ -10,9 +10,11 @@ namespace FarmerApp.Api.Utils
     {
         public static string Generate(User user, string key)
         {
+            var userId = user.Id ?? user.Phone;
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Id ?? user.Phone),
+                new Claim(JwtRegisteredClaimNames.Sub, userId),
+                new Claim(ClaimTypes.NameIdentifier, userId),
                 new Claim("phone", user.Phone)
             };
 

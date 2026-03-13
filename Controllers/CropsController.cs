@@ -12,10 +12,25 @@ namespace FarmerApp.Api.Controllers
     public class CropsController : ControllerBase
     {
         private readonly CropService _cropService;
+        private readonly ILogger<CropsController> _logger;
 
-        public CropsController(CropService cropService)
+        public CropsController(CropService cropService, ILogger<CropsController> logger)
         {
             _cropService = cropService;
+            _logger = logger;
+        }
+
+        private string? GetUserId()
+        {
+            return User.FindFirstValue(JwtRegisteredClaimNames.Sub)
+                ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
+        }
+
+        private void LogResolvedClaims(string endpointName)
+        {
+            var claims = User.Claims.Select(claim => $"{claim.Type}={claim.Value}").ToArray();
+            _logger.LogInformation("Crop endpoint {Endpoint} claims: {Claims}", endpointName, claims);
+            _logger.LogInformation("Crop endpoint {Endpoint} resolved userId: {UserId}", endpointName, GetUserId());
         }
 
         [HttpGet("catalog")]
@@ -28,8 +43,9 @@ namespace FarmerApp.Api.Controllers
         [HttpPost]
         public async Task<IActionResult> AddCrop(AddCropDto dto)
         {
-            var userId = User.FindFirstValue(JwtRegisteredClaimNames.Sub)
-                ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
+            LogResolvedClaims("AddCrop");
+
+            var userId = GetUserId();
             var userPhone = User.FindFirstValue("phone");
 
             if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(userPhone))
@@ -48,8 +64,9 @@ namespace FarmerApp.Api.Controllers
         [HttpGet("my")]
         public async Task<IActionResult> GetMyCrops()
         {
-            var userId = User.FindFirstValue(JwtRegisteredClaimNames.Sub)
-                ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
+            LogResolvedClaims("GetMyCrops");
+
+            var userId = GetUserId();
             if (string.IsNullOrWhiteSpace(userId))
                 return Unauthorized("Invalid token");
 
