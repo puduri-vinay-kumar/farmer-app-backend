@@ -60,5 +60,19 @@ namespace FarmerApp.Api.Services
                 ? user
                 : null;
         }
+
+        public async Task<User?> GetProfile(string userId, string? phone)
+        {
+            var user = await _db.Users
+                .Find(u => u.Id == userId)
+                .FirstOrDefaultAsync();
+
+            if (user != null || string.IsNullOrWhiteSpace(phone))
+                return user;
+
+            return await _db.Users
+                .Find(u => u.Phone == phone)
+                .FirstOrDefaultAsync();
+        }
     }
 }

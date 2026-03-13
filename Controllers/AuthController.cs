@@ -1,3 +1,6 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using FarmerApp.Api.DTOs;
 using FarmerApp.Api.Services;
@@ -48,6 +51,43 @@ namespace FarmerApp.Api.Controllers
         public IActionResult Ping()
         {
             return Ok("DB Connected");
+        }
+
+        [Authorize]
+        [HttpGet("me")]
+        public async Task<IActionResult> Me()
+        {
+            var userId = User.FindFirstValue(JwtRegisteredClaimNames.Sub)
+                ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var phone = User.FindFirstValue("phone");
+
+            if (string.IsNullOrWhiteSpace(userId) && string.IsNullOrWhiteSpace(phone))
+                return Unauthorized("Invalid token");
+
+            var user = await _auth.GetProfile(userId ?? string.Empty, phone);
+            if (user == null)
+                return NotFound("User not found");
+
+            return Ok(new UserProfileDto
+            {
+                Id = user.Id,
+                FirstName = user.FirstName,
+                MiddleName = user.MiddleName,
+                LastName = user.LastName,
+                Phone = user.Phone,
+                Gender = user.Gender,
+                Dob = user.Dob,
+                Qualification = user.Qualification,
+                District = user.District,
+                Block = user.Block,
+                Ivcs = user.Ivcs,
+                Village = user.Village,
+                Pincode = user.Pincode,
+                CurrentAddress = user.CurrentAddress,
+                PermanentAddress = user.PermanentAddress,
+                EpicOrAadhar = user.EpicOrAadhar,
+                CreatedAt = user.CreatedAt
+            });
         }
     }
 }
