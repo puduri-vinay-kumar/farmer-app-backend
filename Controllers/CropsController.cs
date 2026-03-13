@@ -28,7 +28,8 @@ namespace FarmerApp.Api.Controllers
         [HttpPost]
         public async Task<IActionResult> AddCrop(AddCropDto dto)
         {
-            var userId = User.FindFirstValue(JwtRegisteredClaimNames.Sub);
+            var userId = User.FindFirstValue(JwtRegisteredClaimNames.Sub)
+                ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
             var userPhone = User.FindFirstValue("phone");
 
             if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(userPhone))
@@ -47,7 +48,8 @@ namespace FarmerApp.Api.Controllers
         [HttpGet("my")]
         public async Task<IActionResult> GetMyCrops()
         {
-            var userId = User.FindFirstValue(JwtRegisteredClaimNames.Sub);
+            var userId = User.FindFirstValue(JwtRegisteredClaimNames.Sub)
+                ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrWhiteSpace(userId))
                 return Unauthorized("Invalid token");
 
