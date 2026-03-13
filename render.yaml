@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: farmerapp-api
+    runtime: dotnet
+    plan: free
+    buildCommand: dotnet publish -c Release -o out
+    startCommand: dotnet out/FarmerApp.Api.dll
+    healthCheckPath: /api/auth/ping
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: MongoDb__ConnectionString
+        sync: false
+      - key: MongoDb__DatabaseName
+        value: farmer_app_db
+      - key: Jwt__Key
+        sync: false
